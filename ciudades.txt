@@ -1,0 +1,22 @@
+Forest City,Tesla City
+Forest City,Silverstone City
+Forest City,Valley City
+Forest City,Storm City
+Tesla City,Capital City
+Capital City,Mountain City
+Capital City,Desert City
+Capital City,Cliff City
+Cliff City,Desert City
+Cliff City,Mountain City
+Desert City,Mountain City
+Valley City,Silverstone City
+Valley City,Storm City
+Silverstone City,Storm City
+Silverstone City,River City
+Storm City,Coast City
+Coast City,River City
+Coast City,Island City
+Coast City,Hill City
+Island City,Hill City
+Hill City,River City
+River City, Sunflower Fields City
