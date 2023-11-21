@@ -1,12 +1,12 @@
-#THE GUARDIANS BATTLES
+# THE GUARDIANS BATTLES
 
-##Description
+## Description
 
 "The guardians Battles" es un juego que simula batallas entre guardianes con habilidades únicas que protegen las últimas ciudades de la humanidad. Los jugadores luchan por reconocimiento y premios, aspirando a convertirse en uno de los 3 guardianes del reino, bajo las órdenes de Stormbreaker, the judge. El juego se centra en las secciones de duelos y recorrido por el mundo.
 
-##Funcionalidades
+## Funcionalidades
 
-1. Guardar la lista de los candidatos:
+1.Guardar la lista de los candidatos:
   -El ranking muestra la posición actual del guardián, que puede cambiar después de cada batlla.
   -Solo los guardianes con puntajes entre 90 y 99 son catalogados como "Caballeros"
 
@@ -16,9 +16,9 @@
 3.Mapa del mundo
   -Define relación entre los guardines, las ciudades del reino y los rivales durante los viajes
 
-##Implementación del Programa
+## Implementación del Programa
 
-###Estructura de datos
+### Estructura de datos
 
 1.Guardianes:
   -Declaración de estructuras para trabajar con la jerarquía y las ciudades.
@@ -26,7 +26,7 @@
 2.Carga inicial de información:
   -Carga de información desde archivos de configuración para adaptarse a diferentes archivos.
 
-###Menú Principal
+### Menú Principal
 
   -Ver la lista de candidatos
   -Ver al guardián
@@ -34,7 +34,7 @@
   -Presenciar una batalla
   -Salir
 
-###Funcionalidades
+### Funcionalidades
 
 1.Árbol Binario para el Ranking 
   -Operaciones de recorrido, búsqueda y eliminación
