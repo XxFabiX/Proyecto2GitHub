@@ -2,9 +2,9 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 #include <string>
-#include <unordered_set>
 #include <algorithm>
 
 using namespace std;
@@ -16,33 +16,8 @@ struct Guardian {
     string ciudad;
 };
 
-using Arbol = unordered_map<string, vector<Guardian>>;
 using Grafo = unordered_map<string, unordered_set<string>>;
-
-void leerGuardianes(const string &nombreArchivo, Arbol &arbol) {
-    ifstream archivo(nombreArchivo);
-
-    if (!archivo.is_open()) {
-        cout << "Error al abrir el archivo '" << nombreArchivo << "'.";
-        return;
-    }
-			
-    string linea;
-    while (getline(archivo, linea)) {
-        istringstream ss(linea);
-        Guardian guard;
-        getline(ss, guard.nombre, ',');
-        ss >> guard.poder;
-        ss.ignore(); // Ignorar la coma despues del poder
-        getline(ss, guard.maestro, ',');
-        getline(ss, guard.ciudad);
-
-        // Agregar el guardian al arbol
-        arbol[guard.maestro].push_back(guard);
-    }
-
-    archivo.close();
-}
+using Arbol = unordered_map<string, vector<Guardian>>;
 
 void leerCiudades(const string &nombreArchivo, Grafo &grafo, unordered_set<string> &ciudadesUnicas) {
     ifstream archivo(nombreArchivo);
@@ -102,29 +77,115 @@ void imprimirMatrizAdyacenciaConLetras(const unordered_set<string> &ciudadesUnic
     }
 }
 
-void mostrarGrafoCiudades() {
-    Grafo grafo;
-    unordered_set<string> ciudadesUnicas;
-    leerCiudades("ciudades.txt", grafo, ciudadesUnicas);
-
-    imprimirGrafo(grafo);
-
-    // Asignar letras a las ciudades
-    unordered_map<string, char> ciudadLetra;
-    char letra = 'A';
-    for (const auto &ciudad : ciudadesUnicas) {
-        ciudadLetra[ciudad] = letra;
-        ++letra;
-    }
-
-    // Imprimir asignacion de letras a ciudades
-    cout << "\nAsignación de letras a ciudades:\n";
+void agregarCamino(Grafo &grafo, unordered_set<string> &ciudadesUnicas, const unordered_map<string, char> &ciudadLetra) {
+    cout << "\nLista de ciudades:\n";
     for (const auto &par : ciudadLetra) {
         cout << par.second << ":" << par.first << "\n";
     }
 
-    // Imprimir Matriz de Adyacencia con letras
-    imprimirMatrizAdyacenciaConLetras(ciudadesUnicas, grafo, ciudadLetra);
+    char letraOrigen, letraDestino;
+
+    cout << "Elija la letra de la ciudad de origen para agregar un camino: ";
+    cin >> letraOrigen;
+
+    cout << "Elija la letra de la ciudad de destino para conectarla: ";
+    cin >> letraDestino;
+
+    // Obtener nombres de ciudades desde las letras
+    string ciudadOrigen, ciudadDestino;
+    for (const auto &par : ciudadLetra) {
+        if (par.second == letraOrigen) {
+            ciudadOrigen = par.first;
+        }
+        if (par.second == letraDestino) {
+            ciudadDestino = par.first;
+        }
+    }
+
+    // Verificar si las ciudades son validas
+    if (ciudadOrigen.empty() || ciudadDestino.empty()) {
+        cout << "Letras de ciudad no validas. Asegurese de elegir letras de ciudad existentes.\n";
+        return;
+    }
+
+    // Agregar conexion al grafo
+    grafo[ciudadOrigen].insert(ciudadDestino);
+    grafo[ciudadDestino].insert(ciudadOrigen);
+
+    // Agregar ciudades al conjunto
+    ciudadesUnicas.insert(ciudadOrigen);
+    ciudadesUnicas.insert(ciudadDestino);
+
+    cout << "Se ha agregado un camino entre " << ciudadOrigen << " y " << ciudadDestino << ".\n";
+}
+
+void eliminarCamino(Grafo &grafo, unordered_set<string> &ciudadesUnicas, const unordered_map<string, char> &ciudadLetra) {
+    cout << "\nLista de ciudades:\n";
+    for (const auto &par : ciudadLetra) {
+        cout << par.second << ":" << par.first << "\n";
+    }
+
+    char letraOrigen, letraDestino;
+
+    cout << "Elija la letra de la ciudad de origen para eliminar un camino: ";
+    cin >> letraOrigen;
+
+    cout << "Elija la letra de la ciudad de destino para desconectarla: ";
+    cin >> letraDestino;
+
+    // Obtener nombres de ciudades desde las letras
+    string ciudadOrigen, ciudadDestino;
+    for (const auto &par : ciudadLetra) {
+        if (par.second == letraOrigen) {
+            ciudadOrigen = par.first;
+        }
+        if (par.second == letraDestino) {
+            ciudadDestino = par.first;
+        }
+    }
+
+    // Verificar si las ciudades son validas
+    if (ciudadOrigen.empty() || ciudadDestino.empty()) {
+        cout << "Letras de ciudad no validas. Asegurese de elegir letras de ciudad existentes.\n";
+        return;
+    }
+
+    // Verificar si existe un camino entre las ciudades
+    if (grafo[ciudadOrigen].count(ciudadDestino) == 0) {
+        cout << "No hay un camino entre " << ciudadOrigen << " y " << ciudadDestino << ".\n";
+        return;
+    }
+
+    // Eliminar conexion del grafo
+    grafo[ciudadOrigen].erase(ciudadDestino);
+    grafo[ciudadDestino].erase(ciudadOrigen);
+
+    cout << "Se ha eliminado el camino entre " << ciudadOrigen << " y " << ciudadDestino << ".\n";
+}
+
+void leerGuardianes(const string &nombreArchivo, Arbol &arbol) {
+    ifstream archivo(nombreArchivo);
+
+    if (!archivo.is_open()) {
+        cout << "Error al abrir el archivo '" << nombreArchivo << "'.";
+        return;
+    }
+
+    string linea;
+    while (getline(archivo, linea)) {
+        istringstream ss(linea);
+        Guardian guard;
+        getline(ss, guard.nombre, ',');
+        ss >> guard.poder;
+        ss.ignore(); // Ignorar la coma después del poder
+        getline(ss, guard.maestro, ',');
+        getline(ss, guard.ciudad);
+
+        // Agregar el guardian al árbol
+        arbol[guard.maestro].push_back(guard);
+    }
+
+    archivo.close();
 }
 
 void imprimirArbol(const Arbol &arbol, const string &raiz, int nivel) {
@@ -143,38 +204,116 @@ void imprimirArbol(const Arbol &arbol, const string &raiz, int nivel) {
     }
 }
 
+void mostrarArbol(const Arbol &arbol) {
+    cout << "\nArbol de Guardianes:\n";
+    imprimirArbol(arbol, "None", 0);
+}
+
+void mostrarListadoCiudades(const unordered_set<string> &ciudadesUnicas, const unordered_map<string, char> &ciudadLetra) {
+    cout << "\nListado de Ciudades:\n";
+    for (const auto &ciudad : ciudadesUnicas) {
+        cout << ciudadLetra.at(ciudad) << ":" << ciudad << "\n";
+    }
+}
+
+void consultarGuardianesEnCiudad(const Grafo &grafo, const Arbol &arbol, const unordered_set<string> &ciudadesUnicas, const unordered_map<string, char> &ciudadLetra) {
+    mostrarListadoCiudades(ciudadesUnicas, ciudadLetra);
+
+    char letraCiudad;
+    cout << "Elija la letra de la ciudad que desea consultar: ";
+    cin >> letraCiudad;
+
+    // Obtener nombre de la ciudad desde la letra
+    string ciudadConsulta;
+    for (const auto &par : ciudadLetra) {
+        if (par.second == letraCiudad) {
+            ciudadConsulta = par.first;
+            break;
+        }
+    }
+
+    if (ciudadConsulta.empty()) {
+        cout << "Letra de ciudad no valida. Asegurese de elegir una letra de ciudad existente.\n";
+        return;
+    }
+
+    // Mostrar guardianes en la ciudad seleccionada
+    cout << "\nEn la ciudad " << ciudadConsulta << " estan los siguientes guardianes:\n";
+    for (const auto &par : arbol) {
+        for (const auto &guardian : par.second) {
+            if (guardian.ciudad == ciudadConsulta) {
+                cout << "- " << guardian.nombre << " (Maestro: " << par.first << ", Poder: " << guardian.poder << ")\n";
+            }
+        }
+    }
+
+    // Mostrar ciudades conectadas a la ciudad seleccionada
+    cout << "\nLa ciudad " << ciudadConsulta << " esta conectada con las siguientes ciudades:\n";
+    for (const auto &vecino : grafo.at(ciudadConsulta)) {
+        cout << "- " << vecino << "\n";
+    }
+}
+
+
 int main() {
+    Grafo grafo;
+    unordered_set<string> ciudadesUnicas;
+    unordered_map<string, char> ciudadLetra;
     Arbol arbol;
-    leerGuardianes("guardianes.txt", arbol);
 
     int opcion;
+
     do {
         cout << "\nMenu:\n";
-        cout << "1. Mostrar Jerarquia\n";
-        cout << "2. Mostrar Grafo de Ciudades\n"; 
+        cout << "1. Leer ciudades y mostrar grafo\n";
+        cout << "2. Agregar un camino entre dos ciudades\n";
+        cout << "3. Eliminar un camino entre dos ciudades\n";
+        cout << "4. Mostrar Arbol de Guardianes\n";
+        cout << "5. Consultar Guardianes en una Ciudad\n";
         cout << "0. Salir\n";
-        cout << "Ingrese su opcion: ";
+        cout << "Ingrese la opcion: ";
         cin >> opcion;
 
-        switch (opcion) {
-            case 1:
-                cout << "\nArbol de Personajes:\n";
-                imprimirArbol(arbol, "None", 0);
-                break;
-            case 2:
-                mostrarGrafoCiudades(); // Llamar a la funcion para mostrar el grafo de ciudades
-                break;
-            case 0:
-                cout << "Saliendo del programa. Hasta luego!\n";
-                break;
-            default:
-                cout << "Opcion no valida. Intentelo de nuevo.\n";
+        if (opcion == 1) {
+            leerCiudades("ciudades.txt", grafo, ciudadesUnicas);
+
+            imprimirGrafo(grafo);
+
+            // Asignar letras a las ciudades
+            char letra = 'A';
+            for (const auto &ciudad : ciudadesUnicas) {
+                ciudadLetra[ciudad] = letra;
+                ++letra;
+            }
+
+            // Imprimir asignacion de letras a ciudades
+            cout << "\nAsignacion de letras a ciudades:\n";
+            for (const auto &par : ciudadLetra) {
+                cout << par.second << ":" << par.first << "\n";
+            }
+
+            // Imprimir Matriz de Adyacencia con letras
+            imprimirMatrizAdyacenciaConLetras(ciudadesUnicas, grafo, ciudadLetra);
+        } else if (opcion == 2) {
+            agregarCamino(grafo, ciudadesUnicas, ciudadLetra);
+        } else if (opcion == 3) {
+            eliminarCamino(grafo, ciudadesUnicas, ciudadLetra);
+        } else if (opcion == 4) {
+            leerGuardianes("guardianes.txt", arbol);
+            mostrarArbol(arbol);
+        } else if (opcion == 5) {
+            consultarGuardianesEnCiudad(grafo, arbol, ciudadesUnicas, ciudadLetra);
+        } else if (opcion == 0) {
+            cout << "Saliendo del programa.\n";
+        } else {
+            cout << "Opcion no valida. Intente de nuevo.\n";
         }
 
     } while (opcion != 0);
 
     return 0;
 }
+
 
 
 
