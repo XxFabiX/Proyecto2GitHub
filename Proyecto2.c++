@@ -19,6 +19,11 @@ struct Guardian {
 using Grafo = unordered_map<string, unordered_set<string>>;
 using Arbol = unordered_map<string, vector<Guardian>>;
 
+
+bool compararPorPoder(const Guardian &a, const Guardian &b) {
+    return a.poder > b.poder;
+}
+
 void leerCiudades(const string &nombreArchivo, Grafo &grafo, unordered_set<string> &ciudadesUnicas) {
     ifstream archivo(nombreArchivo);
 
@@ -254,12 +259,28 @@ void consultarGuardianesEnCiudad(const Grafo &grafo, const Arbol &arbol, const u
     }
 }
 
+// Función para mostrar el ranking de guardianes por puntos de batalla
+void mostrarRanking(const vector<Guardian> &guardianes) {
+    cout << "\nRanking de Guardianes por Poder de Batalla:\n";
+    for (size_t i = 0; i < guardianes.size(); ++i) {
+        cout << i + 1 << ".-" << guardianes[i].nombre << " (" << guardianes[i].poder << ")\n";
+    }
+}
+
 
 int main() {
     Grafo grafo;
     unordered_set<string> ciudadesUnicas;
     unordered_map<string, char> ciudadLetra;
     Arbol arbol;
+    Arbol arbolRanking;  // Nuevo árbol para construir el ranking
+    bool arbolConstruido = false;  // Indicar si el árbol general se ha construido
+    bool arbolRankingConstruido = false;  // Indicar si el árbol de ranking se ha construido
+    vector<Guardian> guardianes;    // Vector para almacenar guardianes
+
+    // Construir el árbol general al inicio del programa
+    leerGuardianes("guardianes.txt", arbol);
+    arbolConstruido = true;
 
     int opcion;
 
@@ -270,14 +291,13 @@ int main() {
         cout << "3. Eliminar un camino entre dos ciudades\n";
         cout << "4. Mostrar Arbol de Guardianes\n";
         cout << "5. Consultar Guardianes en una Ciudad\n";
+        cout << "6. Mostrar Ranking de Guardianes por Poder de Batalla\n";
         cout << "0. Salir\n";
         cout << "Ingrese la opcion: ";
         cin >> opcion;
 
         if (opcion == 1) {
             leerCiudades("ciudades.txt", grafo, ciudadesUnicas);
-
-            imprimirGrafo(grafo);
 
             // Asignar letras a las ciudades
             char letra = 'A';
@@ -286,7 +306,7 @@ int main() {
                 ++letra;
             }
 
-            // Imprimir asignacion de letras a ciudades
+            // Imprimir asignación de letras a ciudades
             cout << "\nAsignacion de letras a ciudades:\n";
             for (const auto &par : ciudadLetra) {
                 cout << par.second << ":" << par.first << "\n";
@@ -294,17 +314,44 @@ int main() {
 
             // Imprimir Matriz de Adyacencia con letras
             imprimirMatrizAdyacenciaConLetras(ciudadesUnicas, grafo, ciudadLetra);
+
+            // Construir el árbol de ranking con la información actualizada
+            leerGuardianes("guardianes.txt", arbolRanking);
+            arbolRankingConstruido = true;
+
         } else if (opcion == 2) {
             agregarCamino(grafo, ciudadesUnicas, ciudadLetra);
+
         } else if (opcion == 3) {
             eliminarCamino(grafo, ciudadesUnicas, ciudadLetra);
+
         } else if (opcion == 4) {
-            leerGuardianes("guardianes.txt", arbol);
             mostrarArbol(arbol);
+
         } else if (opcion == 5) {
             consultarGuardianesEnCiudad(grafo, arbol, ciudadesUnicas, ciudadLetra);
+
+        } else if (opcion == 6) {
+            // Construir el árbol de ranking cada vez que se selecciona la opción 6
+            if (!arbolRankingConstruido) {
+                leerGuardianes("guardianes.txt", arbolRanking);
+                arbolRankingConstruido = true;
+            }
+
+            // Copiar los guardianes al vector y ordenar por poder de batalla
+            guardianes.clear();
+            for (const auto &par : arbolRanking) {
+                for (const auto &guardian : par.second) {
+                    guardianes.push_back(guardian);
+                }
+            }
+            sort(guardianes.begin(), guardianes.end(), compararPorPoder);
+
+            mostrarRanking(guardianes);
+
         } else if (opcion == 0) {
             cout << "Saliendo del programa.\n";
+
         } else {
             cout << "Opcion no valida. Intente de nuevo.\n";
         }
@@ -313,8 +360,6 @@ int main() {
 
     return 0;
 }
-
-
 
 
 
