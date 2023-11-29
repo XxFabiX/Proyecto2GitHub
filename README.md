@@ -50,3 +50,6 @@
   -Ver el guardián: Detalles del guardián
   -Conocer el reino: Viajar y consultar caminos
   -Presenciar una batalla: Simulación de batallas con reglas especificas
+
+###LINK Video
+https://youtu.be/aGPBRDHXUXA
